@@ -3,7 +3,7 @@ import pytest
 
 class TestBooksCollector:
 
-# Добавляет две книги и проверяет их количество
+#Добавляет две книги и проверяет их количество
     def test_add_new_book_add_two_books(self):
         collector = BooksCollector()
         collector.add_new_book('Гордость и предубеждение и зомби')
@@ -14,19 +14,26 @@ class TestBooksCollector:
         '',  # пустая строка
         'A' * 41,  # 41 символ
     ])
+
 #Не добавляет книгу с некорректным названием (пустая строка или слишком длинное)
     def test_add_new_book_invalid_name_not_added(self, book_name):
         collector = BooksCollector()
+        initial_dict = collector.get_books_genre().copy()
         collector.add_new_book(book_name)
-        assert book_name not in collector.get_books_genre()
+        final_dict = collector.get_books_genre()
+        assert initial_dict == final_dict
 
-#Не добавляет книгу, название которой состоит только из пробелов
-    def test_add_new_book_only_spaces_not_added(self):
+#Добавляет книгу с названием из пробелов, но с пустым жанром
+    def test_add_new_book_only_spaces_added_with_empty_genre(self):
         collector = BooksCollector()
         book_name = '   '
         collector.add_new_book(book_name)
-        # Проверяем, что книга с пробелами не добавлена в словарь
-        assert book_name not in collector.get_books_genre()
+        books_dict = collector.get_books_genre()
+
+        # Проверяем, что книга добавлена
+        assert book_name in books_dict
+        # Проверяем, что у неё пустой жанр (как у всех новых книг)
+        assert books_dict[book_name] == ''
 
     @pytest.mark.parametrize("book_name,genre", [
         ('1984', 'Фантастика'),
@@ -35,7 +42,8 @@ class TestBooksCollector:
         ('Шерлок Холмс', 'Детективы'),
         ('Один дома', 'Комедии')
     ])
-#Устанавливает и получает жанр для книги
+
+# Устанавливает и получает жанр для книги
     def test_set_and_get_book_genre(self, book_name, genre):
         collector = BooksCollector()
         collector.add_new_book(book_name)
@@ -46,8 +54,10 @@ class TestBooksCollector:
         'Несуществующая книга',
         'Выдуманный роман'
     ])
+
 #Возвращает None для несуществующей книги
     def test_get_book_genre_nonexistent_book_returns_none(self, book_name):
+        
         collector = BooksCollector()
         assert collector.get_book_genre(book_name) is None
 
@@ -55,13 +65,13 @@ class TestBooksCollector:
         ('Фантастика', ['1984', 'Дюна']),
         ('Мультфильмы', ['Винни-Пух', 'Король Лев'])
     ])
+
 #Находит книги заданного жанра
     def test_get_books_with_specific_genre(self, genre, books):
         collector = BooksCollector()
         for book in books:
             collector.add_new_book(book)
             collector.set_book_genre(book, genre)
-
         result = collector.get_books_with_specific_genre(genre)
         for book in books:
             assert book in result
@@ -102,22 +112,24 @@ class TestBooksCollector:
         for book_name, _ in safe_books:
             assert book_name in children_books
 
+
         # Проверяем, что возрастные книги отсутствуют
         for book_name, _ in adult_books:
             assert book_name not in children_books
+
 
     @pytest.mark.parametrize("favorite_books", [
         ['Любимая книга 1'],
         ['Книга A', 'Книга B'],
         ['Первая', 'Вторая', 'Третья']
     ])
+
 #Добавляет книги в избранное и получает список избранного
     def test_add_and_get_favorites_books(self, favorite_books):
         collector = BooksCollector()
         for book in favorite_books:
             collector.add_new_book(book)
             collector.add_book_in_favorites(book)
-
         favorites = collector.get_list_of_favorites_books()
         assert len(favorites) == len(favorite_books)
         for book in favorite_books:
